@@ -25,12 +25,23 @@ namespace RabbitMQTest.Configuration
 
                 consumer.Received += (model, ea) =>
                 {
-                    var body = ea.Body.ToArray();
-                    var message = Encoding.UTF8.GetString(body);
-                    Console.Out.WriteLineAsync($" {message} received from consumer");
+                    try 
+                    {
+                      var body = ea.Body.ToArray();
+                      var message = Encoding.UTF8.GetString(body);
+                        
+                      Console.Out.WriteLineAsync($" {message} received from consumer");
+                        
+                      channel.BasicAck(ea.DeliveryTag, false);
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.Out.WriteLine($"{ex.Message}");
+                        channel.BasicNack(ea.DeliveryTag, false, true);                        
+                    }   
                 };
 
-                channel.BasicConsume(queue: Queue, autoAck: true, consumer: consumer);
+                channel.BasicConsume(queue: Queue, autoAck: false, consumer: consumer);
 
             }
         }
